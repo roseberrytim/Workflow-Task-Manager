@@ -1,0 +1,29 @@
+{
+    "name": "Task",
+
+    "requires": [
+		"sharepoint",
+		"srm-theme-base"
+    ],
+	"css": [
+        {
+            "path": "bootstrap.css",
+            "bootstrap": true
+        }
+    ],
+    "js": [
+        {
+            "path": "app.js",
+            "bundle": true
+        },
+		{
+            "path": "Task_Config.js",
+            "bundle": false
+        },		
+		{
+			"path": "workflow/Workflow.Engine.js",
+			"bundle": false
+		}
+    ],
+    "id": "ad3bea6d-261a-41b1-824d-63ee15ac2583"
+}

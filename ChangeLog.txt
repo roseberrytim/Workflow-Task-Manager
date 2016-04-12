@@ -1,0 +1,8 @@
+﻿Change Log
+	June 23, 2015
+	x Add new field to Request List - Fac_Milestone (Yes/No) Field default = No
+	x Remove field from Request List - DivisionApproved
+
+	
+	
+	

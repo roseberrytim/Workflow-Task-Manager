@@ -1,0 +1,20 @@
+.node-box {
+	overflow: visible !important;
+}
+.sheet-container-node {
+	border: 1px dotted #157FCC
+}
+.node-draggable {
+  cursor: move;
+}
+.node-draggable-over {
+	border: 1px dashed #157FCC;
+}
+.node-tool-wrapper{
+	position: absolute;
+	background-color: transparent !important;	
+	right: -35px;
+	top: -5px;
+	width: 40px;		
+}
+

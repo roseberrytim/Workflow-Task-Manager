@@ -1,0 +1,43 @@
+.task-manager-toolbar {
+	background-color: #f5f5f5 !important;
+}
+.x-tab-active .icon-mytasks {
+	left: 64px;
+	background-image: url(images/mytasks_unselected.png) !important;
+}
+.x-tab-active .icon-workflows {
+	left: 64px;
+	background-image: url(images/request_requirements_unselected.png) !important;
+}
+.x-tab-active .icon-people {
+	left: 64px;
+	background-image: url(images/people_unselected.png) !important;
+}
+.x-tab-active .icon-designer {
+	left: 64px;
+	background-image: url(images/designer_unselected.png) !important;
+}
+.icon-mytasks {
+	left: 64px;
+	background-image: url(images/mytasks_selected.png) !important;
+}
+.icon-workflows {
+	left: 64px;
+	background-image: url(images/request_requirements_selected.png) !important;
+}
+.icon-people {
+	left: 64px;
+	background-image: url(images/people_selected.png) !important;
+}
+.icon-designer {
+	left: 64px;
+	background-image: url(images/designer_selected.png) !important;
+}
+.icon-add {
+	background-image: url(images/add.png) !important;
+}
+.icon-configure {
+	width: 32px;
+	height: 32px;
+	background-image: url(images/config.png) !important;
+} 

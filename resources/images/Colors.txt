@@ -1,0 +1,8 @@
+﻿d04437 - Red*
+f6c342 - Yellow
+3b7fc4 - Blue
+8eb021 - Lime*
+14892c - Green
+3b73af - lt dark blue
+205081 - Dark Blue*
+333333 - Black

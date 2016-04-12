@@ -1,0 +1,585 @@
+﻿[{
+    "id": 1,
+    "title": "IncomingWorkload",
+    "description": "New Work Request Incoming Workload Process",
+    "metadata": "Requests",
+    "stores": ["Requests", "Directorates", "Locations"],
+    "participants": [],
+    "nodes": [{
+        "id": 0,
+        "type": "startEvent",
+        "transitions": [{
+            "type": "serial",
+            "nodes": [50],
+            "action": "auto"
+        }]
+    }, {
+        "id": 50,
+        "type": "userTask",
+        "name": "Request Approving Official Confirmation",
+        "description": "New request's Approving Official verify submission of the request",
+        "assignee": ["CurrentDetailItem:Approver"],
+        "individualTasks": true,
+        "allowDocumentEdit": false,
+        "activity": {
+            "type": "Approval"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [100],
+            "action": "approve",
+			"parameters": {
+                "Assignee": "CurrentTask:AssignedTo"
+			}
+        }, {
+            "type": "serial",
+            "nodes": [51],
+            "action": "reject",
+            "parameters": {
+                "Comment": "InputVariable:Comment"
+            }
+        }]
+    }, {
+        "id": 51,
+        "type": "systemTask",
+        "name": "Reject Request",
+        "description": "Send requester notification request is being rejected",
+        "activity": {
+            "type": "UpdateCurrentDetailItem",
+            "fields": {
+                "State": "Rejected",
+                "Comment": "TransitionParameter:Comment"
+            }
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [1],
+            "action": "auto"
+        }]
+    }, {
+        "id": 100,
+        "type": "userTask",
+        "name": "Assign Directorates",
+        "description": "Assign & Notify Directorates for Analysis",
+        "assignee": ["TransitionParameter:Assignee"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "PromptForInput",
+            "record": "CurrentDetailItem",
+            "fields": [{
+                "xtype": "combo",
+                "name": "PrimaryDirectorate",
+                "fieldLabel": "Primary Directorate",
+                "anchor": "50%",
+                "store": "Directorates",
+                "valueField": "UpdateValue",
+                "displayField": "Title"
+            }, {
+                "xtype": "itemselector",
+                "name": "SupportDirectorate",
+                "anchor": "50%",
+                "height": 200,
+                "fieldLabel": "Support Directorates",
+                "imagePath": "resources/images/",
+                "store": "Directorates",
+                "displayField": "Title",
+                "valueField": "UpdateValue",
+                "buttons": ["add", "remove"],
+                "delimiter": ";#",
+                "msgTarget": "side",
+                "fromTitle": "Available",
+                "toTitle": "Selected"
+            }]
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [3],
+            "action": "submit"
+        }]
+    }, {
+        "id": 3,
+        "type": "taskgroup",
+        "name": "Directorate Analysis SubProcess",
+        "description": "Sub process to gather directorate analysis of requirement",
+        "assignee": [""],
+        "individualTasks": true,
+        "activity": {
+            "type": "SubProcess"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [200],
+            "action": "auto",
+            "parameters": {
+                "Assignee": "CurrentTask:AssignedTo",
+                "ParentTask": "CurrentTask:UpdateValue",
+				"Directorate": "TaskVariable:Directorate"
+            }
+        }],
+		 "listeners": [{
+            "event": "create",
+            "type": "delegate",
+            "class": "Custom.delegate.DirectorateReview"
+        }]
+    }, {
+        "id": 200,
+        "type": "userTask",
+        "name": "Directorate Review Requirement",
+        "description": "Verify Directorate Need To Review",
+        "assignee": ["TransitionParameter:Assignee"],
+        "group": "TransitionParameter:ParentTask",
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "Approval",
+			"approveText": "Valid"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [300],
+            "action": "approve",
+            "parameters": {                
+                "ParentTask": "CurrentTask:ParentTask",
+				"Directorate": "TaskVariable:Directorate"
+            }
+        }, {
+            "type": "serial",
+            "nodes": [250],
+            "action": "reject",
+            "parameters": {
+                "Assignee": "CurrentTask:AssignedTo",
+                "ParentTask": "CurrentTask:ParentTask",
+                "Comment": "InputVariable:Comment"
+            }
+        }]
+    }, {
+        "id": 250,
+        "type": "systemTask",
+        "name": "Complete Task Group",
+        "description": "Complete the parent of the task group",
+        "activity": {
+            "type": "CompleteTask",
+            "taskId": "TransitionParameter:ParentTask"
+        },
+        "transitions": [{
+            "type": "serial",
+            "parameters": {
+                "Comment": "TransitionParameter:Comment"
+            },
+            "nodes": [51],
+            "action": "auto"
+        }]
+    }, {
+        "id": 300,
+        "type": "userTask",
+        "name": "Review Authorizations Required",
+        "description": "Determine Validated Manpower Requirement",
+        "assignee": [""],
+        "group": "TransitionParameter:ParentTask",
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "CollectFeedback",
+            "addDocuments": true
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [400],
+            "action": "submit",
+            "parameters": {                
+				"Directorate": "TaskVariable:Directorate",
+                "ParentTask": "CurrentTask:ParentTask"
+            }
+        }],
+        "listeners": [{
+            "event": "create",
+            "type": "delegate",
+            "class": "Custom.delegate.FunctionalAuthorizationReview"
+        }]
+    }, {
+        "id": 400,
+        "type": "parallelGateway",
+        "merge": [300],
+        "transitions": [{
+            "type": "serial",
+            "nodes": [500],
+            "action": "auto",
+            "parameters": {
+                "Directorate": "TransitionParameter:Directorate",
+                "ParentTask": "TransitionParameter:ParentTask"				
+            }
+        }]
+    }, {
+        "id": 500,
+        "type": "userTask",
+        "name": "Facilities Required",
+        "description": "Determine Facilities Required",
+        "assignee": ["Role:{%TransitionParameter:Directorate%} Facilities Manager"],
+        "group": "TransitionParameter:ParentTask",
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "CustomInput",
+            "alias": "facilities",
+            "addDocuments": true,
+            "requires": "Custom.activity.Facilities"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [600],
+            "action": "submit",
+            "parameters": {
+                "Directorate": "TaskVariable:Directorate",
+                "ParentTask": "CurrentTask:ParentTask"
+            }
+        }]
+    }, {
+        "id": 600,
+        "type": "userTask",
+        "name": "Analyze All Directorate Resources",
+        "description": "Directorate review of all request resources",
+        "assignee": ["Role:{%TransitionParameter:Directorate%} Resources Analyst"],
+        "group": "TransitionParameter:ParentTask",
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "CustomInput",
+            "alias": "directorateanalysis",
+            "addDocuments": true,
+            "requires": "Custom.activity.DirectorateAnalysis"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [700],
+            "action": "submit",
+            "parameters": {
+                "Directorate": "TaskVariable:Directorate",
+                "ParentTask": "CurrentTask:ParentTask"
+            }
+        }]
+    }, {
+        "id": 700,
+        "type": "userTask",
+        "name": "Directorate Approving Official Confirmation",
+        "description": "Directorate Approving Official verify submission of the request",
+        "assignee": ["Role:{%TransitionParameter:Directorate%} Directorate Approver"],
+        "group": "TransitionParameter:ParentTask",
+        "individualTasks": true,
+        "allowDocumentEdit": false,
+        "activity": {
+            "type": "Approval"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [800],
+            "action": "approve",
+            "parameters": {
+                "ParentTask": "CurrentTask:ParentTask"
+            }
+        }, {
+            "type": "serial",
+            "nodes": [250],
+            "action": "reject",
+            "parameters": {
+                "Comment": "InputVariable:Comment",
+                "ParentTask": "CurrentTask:ParentTask"
+            }
+        }]
+    }, {
+        "id": 800,
+        "type": "systemTask",
+        "name": "Complete Task Group",
+        "description": "Complete the parent of the task group",
+        "activity": {
+            "type": "CompleteTask",
+            "taskId": "TransitionParameter:ParentTask"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [4],
+            "action": "auto"
+        }]
+    }, {
+        "id": 4,
+        "type": "gateway_taskgroup",
+        "merge": [3],
+        "transitions": [{
+            "type": "serial",
+            "nodes": [900],
+            "action": "auto"
+        }]
+    }, {
+        "id": 900,
+        "type": "userTask",
+        "name": "Submitted Request Review",
+        "description": "Review of submitted request to verify it is an AFLCMC type requirement",
+        "assignee": ["Role:XP"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "Approval"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [1000],
+            "action": "approve"
+        }, {
+            "type": "serial",
+            "nodes": [950],
+            "action": "reject",
+            "parameters": {
+                "Comment": "InputVariable:Comment"
+            }
+        }]
+    }, {
+        "id": 950,
+        "type": "userTask",
+        "name": "Request Additional Data",
+        "description": "Update request details based on commented feedback",
+        "assignee": ["Role:XP"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "PromptForInput",
+            "fields": [{
+                "xtype": "combo",
+                "name": "Assignee",
+                "fieldLabel": "Directorate",
+                "anchor": "50%",
+                "store": "Directorates",
+                "valueField": "Title",
+                "displayField": "Title",
+                "value": "CurrentDetailItem:PrimaryDirectorate"
+            }]
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [975],
+            "action": "submit",
+            "parameters": {
+                "Assignee": "Role:{%InputVariable:Assignee%} Resources Analyst"
+            }
+        }]
+    }, {
+        "id": 975,
+        "type": "userTask",
+        "name": "Request Additional Data",
+        "description": "Update request details based on commented feedback",
+        "assignee": ["Role::TransitionParameter:Assignee"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "AddDocuments"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [900],
+            "action": "submit"
+        }]
+    }, {
+        "id": 1000,
+        "type": "userTask",
+        "name": "Validate Requirement",
+        "description": "Verify that requirement is valid and all required data has been collected",
+        "assignee": ["Role:AFLCMC_XP-OZ Directorate Approver"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "Approval"
+        },
+        "transitions": [{
+            "type": "parallel",
+            "nodes": [1075, 1100],
+            "action": "approve",
+            "parameters": {
+                "Comment": "InputVariable:Comment"
+            }
+        }, {
+            "type": "serial",
+            "nodes": [1050],
+            "action": "reject"
+        }]
+    }, {
+        "id": 1050,
+        "type": "userTask",
+        "name": "Reject Requirement",
+        "description": "Send Notificaiton of invalid requirement",
+        "assignee": ["Role:XP"],
+        "individualTasks": true,
+        "allowDocumentEdit": false,
+        "activity": {
+            "type": "SendNotification",
+            "notification": {
+                "editBeforeSend": false,
+                "to": [],
+                "cc": [],
+                "subject": ["SRM Incoming Work Request Workflow - {0}", "WorkflowTitle"],
+                "body": ["{0} has been submitted to the next step and is awaiting your input", "WorkflowTitle"]
+            }
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [1700],
+            "action": "submit"
+        }]
+    }, {
+        "id": 1075,
+        "type": "userTask",
+        "name": "Send Notification",
+        "description": "Send Notificaiton of valid requirement acceptance",
+        "assignee": ["Role:XP"],
+        "individualTasks": true,
+        "allowDocumentEdit": false,
+        "activity": {
+            "type": "SendNotification",
+            "notification": {
+                "editBeforeSend": false,
+                "to": [],
+                "cc": [],
+                "subject": ["SRM Incoming Work Request Workflow - {0}", "WorkflowTitle"],
+                "body": ["{0} has been submitted to the next step and is awaiting your input", "WorkflowTitle"]
+            }
+        },
+        "transitions": []
+    }, {
+        "id": 1100,
+        "type": "userTask",
+        "name": "Validate PM Estimate or Provide ASU Results",
+        "description": "Determine Validated Manpower Requirement",
+        "assignee": ["Role:AFLCMC_DP Manpower Reviewer"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "CustomInput",
+            "addDocuments": true,
+            "alias": "authorizations",
+            "requires": "Custom.activity.Authorizations"
+        },
+        "transitions": [{
+            "type": "parallel",
+            "nodes": [1200, 1400],
+            "action": "submit"
+        }]
+    }, {
+        "id": 1200,
+        "type": "userTask",
+        "name": "CSF Review Authorizations Required",
+        "description": "Determine Validated Manpower Requirement",
+        "assignee": ["Role:CSF_PM", "Role:CSF_FM", "Role:CSF_EN", "Role:CSF_PK", "Role:CSF_LG", "Role:CSF_TE", "Role:CSF_COS", "Role:CSF_Intel", "Role:CSF_NFA"],
+        "individualTasks": true,
+        "allowDocumentEdit": false,
+        "activity": {
+            "type": "CollectFeedback",
+            "addDocuments": false
+        },
+        "transitions": []
+    }, {
+        "id": 1400,
+        "type": "userTask",
+        "name": "Develop Risk Based Tier Recommendation",
+        "description": "Using calculation from OPPM determine this requests RBT Score",
+        "assignee": ["Role:XP"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "PromptForInput",
+            "record": "CurrentDetailItem",
+            "fields": [{
+                "xtype": "combo",
+                "name": "TempRBTScore",
+                "fieldLabel": "Score",
+                "anchor": "25%",
+                "store": ["1", "2", "3", "4", "5", "N/A"]
+            }]
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [1500],
+            "action": "submit",
+            "parameters": {
+                "RiskScore": "InputVariable:TempRBTScore"
+            }
+        }]
+    }, {
+        "id": 1500,
+        "type": "userTask",
+        "name": "Directorate Risk Analysis",
+        "description": "Risk analysis input based upon full, no, and tiered resourcing",
+        "assignee": ["Role:XP"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+           "type": "AddDocuments"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [1600],
+            "action": "submit"
+        }]
+    }, {
+        "id": 1600,
+        "type": "userTask",
+        "name": "Develop COA Slides",
+        "description": "Process request data to create COA Slides",
+        "assignee": ["Role:XP"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "AddDocuments"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [1700],
+            "action": "submit"
+        }]
+    }, {
+        "id": 1700,
+        "type": "userTask",
+        "name": "Governance Board Review",
+        "description": "Governance Board Review",
+        "assignee": ["Role:XP"],
+        "individualTasks": true,
+        "allowDocumentEdit": true,
+        "activity": {
+            "type": "Approval"
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [1800],
+            "action": "approve",
+            "parameters": {
+                "State": "Approved",
+                "Comment": "InputVariable:Comment"
+            }
+        }, {
+            "type": "serial",
+            "nodes": [1800],
+            "action": "reject",
+            "parameters": {
+                "State": "Rejected",
+                "Comment": "InputVariable:Comment"
+            }
+        }]
+    }, {
+        "id": 1800,
+        "type": "systemTask",
+        "name": "Report Governance Board Review Disposition",
+        "description": "Set the request state based on governance board review decision",
+        "activity": {
+            "type": "UpdateCurrentDetailItem",
+            "fields": {
+                "State": "TransitionParameter:State",
+                "Comment": "TransitionParameter:Comment"				
+            }
+        },
+        "transitions": [{
+            "type": "serial",
+            "nodes": [1],
+            "action": "auto"
+        }]
+    }, {
+        "id": 1,
+        "type": "endEvent"
+    }]
+}]

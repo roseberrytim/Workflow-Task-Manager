@@ -1,0 +1,11 @@
+﻿Workflow Manager
+
+Need to implement options such as
+
+create new process isntance
+edit current process instance
+	change variables
+	update tasks
+	send notifications
+	change assignees
+remvoe process instance

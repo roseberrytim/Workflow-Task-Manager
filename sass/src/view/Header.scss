@@ -1,0 +1,37 @@
+.app-header {	
+	background-color: #205081;
+	border-bottom-color: #2e3d54;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;	
+	font-size: 14px;
+}
+
+.app-header-title h1 {
+ 	margin: 5px 0 0 0;	
+	font-size: 24px;	
+	color: #fff;
+	cursor: pointer;
+}
+.app-header-toolbar {	
+	background: #205081;	
+	margin: 0 5px 0 0;
+}
+.app-header-search {
+	background:url(images/search-box.png) no-repeat;
+	padding: 1px 0 0 25px
+}
+.app-header-search .x-panel-body-default {
+	border:0;
+	background:0;
+}
+.app-header-search .x-form-text {
+	border:0;
+	background:0;
+}
+.app-header-search .x-form-trigger-wrap {
+	border: 0;
+	background: 0;
+}
+.app-header-search .x-trigger-cell {
+	background: 0;	
+}

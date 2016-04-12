@@ -1,0 +1,53 @@
+.task-listview {	
+	border: 1px solid #d4d4d4;	
+	background: #ffffff;
+}
+.task-button {
+	position: relative;	
+	color: #666;	
+	padding: 5px 5px;
+	cursor: pointer;
+	display: block;			
+}
+.task-button-wrapper {
+	height: 110px;
+	padding: 5px 0 0 0;
+}
+
+.task-button-over {
+	background-color: #e5e5e5;
+}
+.task-button-pressed {
+	background-color: #c9c9c9;
+	color: #ffffff !important;
+}
+.task-detail {
+	font-size: 18px;
+	display: inline-block;
+	vertical-align: middle;
+	line-height: 14px;
+}
+.task-detail p {
+	font-size: 14px;
+	text-align: center;
+}
+.task-detail-meta {
+	font-size: 12px;
+	font-weight: bold;
+}
+.task-detail-meta span {
+	color: #3B7FC4;
+	font-weight: normal;
+}
+.task-seperator{
+	margin: 5px 2px;
+	border-top-style: solid;
+	border-top-color: #d4d4d4;
+	border-top-width: 1px;
+}
+.old-task-detail span {
+	display: inline-block;
+	vertical-align: middle;
+	line-height: normal;
+	font-size: 20px;
+}
